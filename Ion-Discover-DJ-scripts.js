@@ -19,7 +19,7 @@ IonDiscoverDJ.scratchMode = false;
 IonDiscoverDJ.pitchDial1 = false;
 IonDiscoverDJ.pitchDial2 = false;
 IonDiscoverDJ.shiftMode = false;
-IonDiscoverDJ.filterKnowHeld = false;
+IonDiscoverDJ.filterKnobHeld = false;
  
 IonDiscoverDJ.init = function (id) {    // called when the MIDI device is opened & set up
    print ("Ion Discover DJ id: \""+id+"\" initialized.");
@@ -116,6 +116,14 @@ IonDiscoverDJ.toggle_scratch_mode_on = function (control, value, status) {
        midi.sendShortMsg(0x90, IonDiscoverDJ.leds["scratch"] , IonDiscoverDJ.ledOn);
     }
 }
+
+IonDiscoverDJ.tempoUp = function (control, value, status) {
+   if(IonDiscoverDJ.shiftMode) {
+      engine.setValue("[Channel1]","rate", engine.getValue("[Channel1]","rate") + 0.01);
+   } else {
+      engine.setValue("[Channel1]","rate", engine.getValue("[Channel1]","rate") + 0.05);
+   }
+}  
  
  
 IonDiscoverDJ.jog_touch = function (channel, control, value, status, group) {
@@ -137,7 +145,8 @@ IonDiscoverDJ.jog_wheel = function (channel, control, value, status, group) {
    var jogValue = value >=0x40 ? value - 0x80 : value; // -64 to +63, - = CCW, + = CW
    IonDiscoverDJ.GetDeck(group).jogMove(jogValue);
 };
- 
+
+// Reverse selects headphone cue
 IonDiscoverDJ.reversek = function (channel, control, value, status, group) {
    if (group == "[Channel1]") {
       IonDiscoverDJ.pflCh1()
@@ -212,7 +221,7 @@ IonDiscoverDJ.EnableFilterTrack2 = function (group, control, value, status) {
 }
  
 IonDiscoverDJ.filterKnobHeld = function (group, control, value) {
-   IonDiscoverDJ.filterKnowHeld = (value == 0x7F); //If button down on, else off
+   IonDiscoverDJ.filterKnobHeld = (value == 0x7F); //If button down on, else off
 }
  
 IonDiscoverDJ.FilterWheel = function (channel, control, value, status, group) {
@@ -221,7 +230,7 @@ IonDiscoverDJ.FilterWheel = function (channel, control, value, status, group) {
    //
    var increment = 0.025
    var effectNum = "1"
-   if (IonDiscoverDJ.filterKnowHeld) {
+   if (IonDiscoverDJ.filterKnobHeld) {
       effectNum = "2"
       increment = 0.1
    }
